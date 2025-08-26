@@ -52,7 +52,7 @@ create table items(
     order_id uuid not null,
     chrt_id int not null,
     track_number varchar(255) not null,
-    prime decimal not null,
+    price decimal not null,
     rid varchar(255) not null,
     name varchar(255) not null,
     sale int not null,
