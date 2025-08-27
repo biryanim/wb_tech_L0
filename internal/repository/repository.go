@@ -12,4 +12,9 @@ type OrderRepository interface {
 	CreateDelivery(ctx context.Context, orderID uuid.UUID, delivery *model.Delivery) (int64, error)
 	CreatePayment(ctx context.Context, orderID uuid.UUID, payment *model.Payment) (int64, error)
 	CreateItem(ctx context.Context, orderID uuid.UUID, items *model.Item) error
+
+	GetOrder(ctx context.Context, orderID uuid.UUID) (*model.Order, error)
+	GetDelivery(ctx context.Context, orderID uuid.UUID) (*model.Delivery, error)
+	GetPayment(ctx context.Context, orderID uuid.UUID) (*model.Payment, error)
+	ListItems(ctx context.Context, orderID uuid.UUID) ([]*model.Item, error)
 }

@@ -21,18 +21,18 @@ func (s *service) OrderSaveHandler(ctx context.Context, msg *sarama.ConsumerMess
 			return err
 		}
 
-		_, err = s.orderRepository.CreateDelivery(ctx, &order.Delivery)
+		_, err = s.orderRepository.CreateDelivery(ctx, order.OrderUID, &order.Delivery)
 		if err != nil {
 			return err
 		}
 
-		_, err = s.orderRepository.CreatePayment(ctx, &order.Payment)
+		_, err = s.orderRepository.CreatePayment(ctx, order.OrderUID, &order.Payment)
 		if err != nil {
 			return err
 		}
 
 		for _, item := range order.Items {
-			err = s.orderRepository.CreateItem(ctx, &item)
+			err = s.orderRepository.CreateItem(ctx, order.OrderUID, &item)
 			if err != nil {
 				return err
 			}
@@ -44,6 +44,8 @@ func (s *service) OrderSaveHandler(ctx context.Context, msg *sarama.ConsumerMess
 	if err != nil {
 		return err
 	}
+
+	s.cache.Set(order.OrderUID.String(), order)
 
 	return nil
 }

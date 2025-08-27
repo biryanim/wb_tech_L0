@@ -29,7 +29,7 @@ func (r *repo) CreateOrder(ctx context.Context, order *model.Order) (uuid.UUID, 
 	query, args, err := r.qb.
 		Insert("orders").
 		Columns(
-			"id",
+			"order_uid",
 			"track_number",
 			"entry",
 			"locale",
@@ -54,7 +54,7 @@ func (r *repo) CreateOrder(ctx context.Context, order *model.Order) (uuid.UUID, 
 			order.DateCreated,
 			order.OofShard,
 		).
-		Suffix("RETURNING \"id\"").
+		Suffix("RETURNING \"order_uid\"").
 		ToSql()
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to build insert query: %w", err)
@@ -69,11 +69,53 @@ func (r *repo) CreateOrder(ctx context.Context, order *model.Order) (uuid.UUID, 
 	return id, nil
 }
 
+func (r *repo) GetOrder(ctx context.Context, orderID uuid.UUID) (*model.Order, error) {
+	query, args, err := r.qb.
+		Select(
+			"track_number",
+			"entry",
+			"locale",
+			"internal_signature",
+			"customer_id",
+			"delivery_service",
+			"shardKey",
+			"sm_id",
+			"date_created",
+			"oof_shard",
+		).
+		From("orders").
+		Where(squirrel.Eq{"order_uid": orderID}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build select query: %w", err)
+	}
+
+	var order model.Order
+	err = r.db.DB().QueryRowContext(ctx, query, args...).Scan(
+		&order.TrackNumber,
+		&order.Entry,
+		&order.Locale,
+		&order.InternalSignature,
+		&order.CustomerID,
+		&order.DeliveryService,
+		&order.ShardKey,
+		&order.SmID,
+		&order.DateCreated,
+		&order.OofShard,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query order: %w", err)
+	}
+	order.OrderUID = orderID
+
+	return &order, nil
+}
+
 func (r *repo) CreateDelivery(ctx context.Context, orderID uuid.UUID, delivery *model.Delivery) (int64, error) {
 	query, args, err := r.qb.
 		Insert("deliveries").
 		Columns(
-			"order_id",
+			"order_uid",
 			"name",
 			"phone",
 			"zip",
@@ -92,7 +134,7 @@ func (r *repo) CreateDelivery(ctx context.Context, orderID uuid.UUID, delivery *
 			delivery.Region,
 			delivery.Email,
 		).
-		Suffix("RETURNING \"id\"").
+		Suffix("RETURNING \"order_uid\"").
 		ToSql()
 	if err != nil {
 		return int64(0), fmt.Errorf("failed to build insert query: %w", err)
@@ -106,11 +148,46 @@ func (r *repo) CreateDelivery(ctx context.Context, orderID uuid.UUID, delivery *
 	return id, nil
 }
 
+func (r *repo) GetDelivery(ctx context.Context, orderID uuid.UUID) (*model.Delivery, error) {
+	query, args, err := r.qb.
+		Select(
+			"name",
+			"phone",
+			"zip",
+			"city",
+			"address",
+			"region",
+			"email",
+		).
+		From("deliveries").
+		Where(squirrel.Eq{"order_uid": orderID}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build select query: %w", err)
+	}
+
+	var delivery model.Delivery
+	err = r.db.DB().QueryRowContext(ctx, query, args...).Scan(
+		&delivery.Name,
+		&delivery.Phone,
+		&delivery.Zip,
+		&delivery.City,
+		&delivery.Address,
+		&delivery.Region,
+		&delivery.Email,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query delivery: %w", err)
+	}
+
+	return &delivery, nil
+}
+
 func (r *repo) CreatePayment(ctx context.Context, orderID uuid.UUID, payment *model.Payment) (int64, error) {
 	query, args, err := r.qb.
 		Insert("payments").
 		Columns(
-			"order_id",
+			"order_uid",
 			"transaction",
 			"request_id",
 			"currency",
@@ -135,7 +212,7 @@ func (r *repo) CreatePayment(ctx context.Context, orderID uuid.UUID, payment *mo
 			payment.GoodsTotal,
 			payment.CustomFee,
 		).
-		Suffix("RETURNING id").
+		Suffix("RETURNING order_uid").
 		ToSql()
 	if err != nil {
 		return int64(0), fmt.Errorf("failed to build insert query: %w", err)
@@ -150,11 +227,51 @@ func (r *repo) CreatePayment(ctx context.Context, orderID uuid.UUID, payment *mo
 	return id, nil
 }
 
+func (r *repo) GetPayment(ctx context.Context, orderID uuid.UUID) (*model.Payment, error) {
+	query, args, err := r.qb.
+		Select(
+			"transaction",
+			"request_id",
+			"currency",
+			"provider",
+			"amount",
+			"payment_dt",
+			"bank",
+			"delivery_cost",
+			"goods_total",
+			"custom_fee",
+		).
+		From("payments").
+		Where(squirrel.Eq{"order_uid": orderID}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build select query: %w", err)
+	}
+
+	var payment model.Payment
+	err = r.db.DB().QueryRowContext(ctx, query, args...).Scan(
+		&payment.Transaction,
+		&payment.RequestID,
+		&payment.Currency,
+		&payment.Provider,
+		&payment.Amount,
+		&payment.PaymentDt,
+		&payment.Bank,
+		&payment.DeliveryCost,
+		&payment.GoodsTotal,
+		&payment.CustomFee,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query payment: %w", err)
+	}
+	return &payment, nil
+}
+
 func (r *repo) CreateItem(ctx context.Context, orderID uuid.UUID, item *model.Item) error {
 	query, args, err := r.qb.
 		Insert("items").
 		Columns(
-			"order_id",
+			"order_uid",
 			"chrt_id",
 			"track_number",
 			"price",
@@ -192,4 +309,63 @@ func (r *repo) CreateItem(ctx context.Context, orderID uuid.UUID, item *model.It
 	}
 
 	return nil
+}
+
+func (r *repo) ListItems(ctx context.Context, orderID uuid.UUID) ([]*model.Item, error) {
+	query, args, err := r.qb.
+		Select(
+			"chrt_id",
+			"track_number",
+			"price",
+			"rid",
+			"name",
+			"sale",
+			"size",
+			"total_price",
+			"nm_id",
+			"brand",
+			"status",
+		).
+		From("items").
+		Where(squirrel.Eq{"order_uid": orderID}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build select query: %w", err)
+	}
+
+	rows, err := r.db.DB().QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query items: %w", err)
+	}
+	defer rows.Close()
+
+	var items []*model.Item
+	for rows.Next() {
+		item := &model.Item{}
+		err = rows.Scan(
+			&item.ChrtID,
+			&item.TrackNumber,
+			&item.Price,
+			&item.Rid,
+			&item.Name,
+			&item.Sale,
+			&item.Size,
+			&item.TotalPrice,
+			&item.NmID,
+			&item.Brand,
+			&item.Status,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to query items: %w", err)
+		}
+
+		items = append(items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to query items: %w", err)
+	}
+
+	return items, nil
 }

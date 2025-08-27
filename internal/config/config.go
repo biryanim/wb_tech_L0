@@ -9,6 +9,10 @@ type PGConfig interface {
 	DSN() string
 }
 
+type HTTPConfig interface {
+	Address() string
+}
+
 type KafkaConsumerConfig interface {
 	Brokers() []string
 	GroupID() string
