@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/IBM/sarama"
 	"github.com/biryanim/wb_tech_L0/internal/api"
 	"github.com/biryanim/wb_tech_L0/internal/client/cache/lru_cache"
@@ -12,6 +11,7 @@ import (
 	"github.com/biryanim/wb_tech_L0/internal/config"
 	"github.com/biryanim/wb_tech_L0/internal/config/env"
 	orderRepo "github.com/biryanim/wb_tech_L0/internal/repository/order"
+	"github.com/biryanim/wb_tech_L0/internal/service"
 	orderSaverConsumer "github.com/biryanim/wb_tech_L0/internal/service/consumer/order_saver"
 	"github.com/biryanim/wb_tech_L0/internal/service/order"
 	"github.com/gin-gonic/gin"
@@ -24,7 +24,7 @@ import (
 	"syscall"
 )
 
-const cacheCap = 30
+const cacheCap = 5
 
 func main() {
 	ctx := context.Background()
@@ -88,8 +88,18 @@ func main() {
 	orderService := order.NewService(orderRepository, txManager, cacheClient)
 	orderImpl := api.NewImplementation(orderService)
 
+	err = restoreCache(ctx, cacheCap, orderService)
+	if err != nil {
+		log.Printf("failed to restore cache: %s", err.Error())
+	}
+
 	router := gin.Default()
 	router.GET("order/:order_uid", orderImpl.GetOrder)
+	router.Static("/static", "./static")
+	router.LoadHTMLGlob("templates/*")
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
 
 	httpServer := &http.Server{
 		Addr:    httpConfig.Address(),
@@ -99,7 +109,6 @@ func main() {
 	go func() {
 		defer wg.Done()
 		err = httpServer.ListenAndServe()
-		fmt.Println(err)
 		if err != nil && errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("failed to start http server: %v", err)
 		}
@@ -130,4 +139,12 @@ func waitSignal() chan os.Signal {
 	sigterm := make(chan os.Signal, 1)
 	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
 	return sigterm
+}
+
+func restoreCache(ctx context.Context, cacheCap int, serv service.OrderService) error {
+	err := serv.RestoreCache(ctx, cacheCap)
+	if err != nil {
+		return err
+	}
+	return nil
 }

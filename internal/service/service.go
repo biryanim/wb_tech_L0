@@ -11,4 +11,5 @@ type ConsumerService interface {
 
 type OrderService interface {
 	GetOrder(ctx context.Context, orderID string) (*model.Order, error)
+	RestoreCache(ctx context.Context, limit int) error
 }

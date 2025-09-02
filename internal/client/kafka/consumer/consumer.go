@@ -2,7 +2,6 @@ package consumer
 
 import (
 	"context"
-	"fmt"
 	"github.com/IBM/sarama"
 	"github.com/biryanim/wb_tech_L0/internal/client/kafka"
 	"github.com/pkg/errors"
@@ -38,7 +37,6 @@ func (c *consumer) consume(ctx context.Context, topicName string) error {
 	for {
 		err := c.consumerGroup.Consume(ctx, strings.Split(topicName, "."), c.consumerGroupHandler)
 		if err != nil {
-			fmt.Println(err)
 			if errors.Is(err, sarama.ErrClosedConsumerGroup) {
 				return nil
 			}

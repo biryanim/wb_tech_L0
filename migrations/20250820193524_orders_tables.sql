@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 create table orders (
-    order_uid varchar primary key,
+    order_uid varchar(255) primary key,
     track_number varchar(255) not null,
     entry varchar(255) not null,
     locale varchar(10) not null,
@@ -15,7 +15,7 @@ create table orders (
 );
 
 create table deliveries(
-    order_uid varchar primary key,
+    order_uid varchar(255) primary key,
     name varchar(255) not null,
     phone varchar(50) not null,
     zip varchar(20) not null,
@@ -26,7 +26,7 @@ create table deliveries(
 );
 
 create table payments(
-    order_uid varchar primary key,
+    order_uid varchar(255) primary key,
     transaction varchar not null,
     request_id varchar(255),
     currency varchar(10) not null,
@@ -41,7 +41,7 @@ create table payments(
 
 create table items(
     id int generated always as identity primary key,
-    order_uid varchar not null,
+    order_uid varchar(255) not null,
     chrt_id int not null,
     track_number varchar(255) not null,
     price decimal not null,

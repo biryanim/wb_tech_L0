@@ -115,3 +115,71 @@ func (s *serv) GetOrder(ctx context.Context, orderID string) (*model.Order, erro
 
 	return order, nil
 }
+
+func (s *serv) RestoreCache(ctx context.Context, limit int) error {
+	orders, err := s.orderRepository.ListOrdersByLastAdded(ctx, limit)
+	if err != nil {
+		return fmt.Errorf("failed to list orders: %w", err)
+	}
+
+	for i := 0; i < len(orders); i++ {
+		delivery, err := s.orderRepository.GetDelivery(ctx, orders[i].OrderUID)
+		if err != nil {
+			return fmt.Errorf("failed to get delivery: %w", err)
+		}
+		if delivery != nil {
+			orders[i].Delivery = model.Delivery{
+				Name:    delivery.Name,
+				Phone:   delivery.Phone,
+				Zip:     delivery.Zip,
+				City:    delivery.City,
+				Address: delivery.Address,
+				Region:  delivery.Region,
+				Email:   delivery.Email,
+			}
+		}
+
+		payment, err := s.orderRepository.GetPayment(ctx, orders[i].OrderUID)
+		if err != nil {
+			return fmt.Errorf("failed to get payment: %w", err)
+		}
+		if payment != nil {
+			orders[i].Payment = model.Payment{
+				Transaction:  payment.Transaction,
+				RequestID:    payment.RequestID,
+				Currency:     payment.Currency,
+				Provider:     payment.Provider,
+				Amount:       payment.Amount,
+				PaymentDt:    payment.PaymentDt,
+				Bank:         payment.Bank,
+				DeliveryCost: payment.DeliveryCost,
+				GoodsTotal:   payment.GoodsTotal,
+				CustomFee:    payment.CustomFee,
+			}
+		}
+
+		items, err := s.orderRepository.ListItems(ctx, orders[i].OrderUID)
+		if err != nil {
+			return fmt.Errorf("failed to get items: %w", err)
+		}
+		for _, itemModel := range items {
+			orders[i].Items = append(orders[i].Items, model.Item{
+				ChrtID:      itemModel.ChrtID,
+				TrackNumber: itemModel.TrackNumber,
+				Price:       itemModel.Price,
+				Rid:         itemModel.Rid,
+				Name:        itemModel.Name,
+				Size:        itemModel.Size,
+				Sale:        itemModel.Sale,
+				TotalPrice:  itemModel.TotalPrice,
+				NmID:        itemModel.NmID,
+				Brand:       itemModel.Brand,
+				Status:      itemModel.Status,
+			})
+		}
+
+		s.cache.Set(orders[i].OrderUID, orders[i])
+	}
+
+	return nil
+}

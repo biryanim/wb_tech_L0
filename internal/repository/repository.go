@@ -16,4 +16,6 @@ type OrderRepository interface {
 	GetDelivery(ctx context.Context, orderID string) (*model.Delivery, error)
 	GetPayment(ctx context.Context, orderID string) (*model.Payment, error)
 	ListItems(ctx context.Context, orderID string) ([]*model.Item, error)
+
+	ListOrdersByLastAdded(ctx context.Context, limit int) ([]*model.Order, error)
 }

@@ -367,3 +367,61 @@ func (r *repo) ListItems(ctx context.Context, orderID string) ([]*model.Item, er
 
 	return items, nil
 }
+
+func (r *repo) ListOrdersByLastAdded(ctx context.Context, limit int) ([]*model.Order, error) {
+	query, args, err := r.qb.
+		Select(
+			"order_uid",
+			"track_number",
+			"entry",
+			"locale",
+			"internal_signature",
+			"customer_id",
+			"delivery_service",
+			"shardKey",
+			"sm_id",
+			"date_created",
+			"oof_shard",
+		).
+		From("orders").
+		OrderBy("date_created").
+		Limit(uint64(limit)).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build select query: %w", err)
+	}
+
+	rows, err := r.db.DB().QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query orders: %w", err)
+	}
+	defer rows.Close()
+
+	orders := make([]*model.Order, 0)
+	for rows.Next() {
+		order := &model.Order{}
+		err = rows.Scan(
+			&order.OrderUID,
+			&order.TrackNumber,
+			&order.Entry,
+			&order.Locale,
+			&order.InternalSignature,
+			&order.CustomerID,
+			&order.DeliveryService,
+			&order.ShardKey,
+			&order.SmID,
+			&order.DateCreated,
+			&order.OofShard,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to query orders: %w", err)
+		}
+
+		orders = append(orders, order)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to query orders: %w", err)
+	}
+
+	return orders, nil
+}
