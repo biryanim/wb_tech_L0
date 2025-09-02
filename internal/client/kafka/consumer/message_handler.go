@@ -1,15 +1,13 @@
 package consumer
 
 import (
-	"context"
 	"github.com/IBM/sarama"
+	"github.com/biryanim/wb_tech_L0/internal/client/kafka"
 	"log"
 )
 
-type Handler func(ctx context.Context, msg *sarama.ConsumerMessage) error
-
 type GroupHandler struct {
-	msgHandler Handler
+	msgHandler kafka.Handler
 }
 
 func NewGroupHandler() *GroupHandler {

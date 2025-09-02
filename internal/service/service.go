@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"github.com/biryanim/wb_tech_L0/internal/model"
-	"github.com/google/uuid"
 )
 
 type ConsumerService interface {
@@ -11,5 +10,5 @@ type ConsumerService interface {
 }
 
 type OrderService interface {
-	GetOrder(ctx context.Context, orderID uuid.UUID) (*model.Order, error)
+	GetOrder(ctx context.Context, orderID string) (*model.Order, error)
 }

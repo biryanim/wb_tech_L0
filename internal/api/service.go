@@ -3,7 +3,6 @@ package api
 import (
 	"github.com/biryanim/wb_tech_L0/internal/service"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"net/http"
 )
 
@@ -19,14 +18,7 @@ func NewImplementation(orderService service.OrderService) *Implementation {
 }
 
 func (i *Implementation) GetOrder(c *gin.Context) {
-	orderUIDStr := c.Param("order_uid")
-	orderUID, err := uuid.Parse(orderUIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid order UUID format",
-		})
-		return
-	}
+	orderUID := c.Param("order_uid")
 
 	order, err := i.orderService.GetOrder(c.Request.Context(), orderUID)
 	if err != nil {

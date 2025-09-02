@@ -8,7 +8,6 @@ import (
 	"github.com/biryanim/wb_tech_L0/internal/model"
 	"github.com/biryanim/wb_tech_L0/internal/repository"
 	"github.com/biryanim/wb_tech_L0/internal/service"
-	"github.com/google/uuid"
 )
 
 var _ service.OrderService = (*serv)(nil)
@@ -27,8 +26,8 @@ func NewService(orderRepository repository.OrderRepository, txManager db.TxManag
 	}
 }
 
-func (s *serv) GetOrder(ctx context.Context, orderID uuid.UUID) (*model.Order, error) {
-	if cached := s.cache.Get(orderID.String()); cached != nil {
+func (s *serv) GetOrder(ctx context.Context, orderID string) (*model.Order, error) {
+	if cached := s.cache.Get(orderID); cached != nil {
 		if ord, ok := cached.(*model.Order); ok {
 			return ord, nil
 		}
@@ -112,7 +111,7 @@ func (s *serv) GetOrder(ctx context.Context, orderID uuid.UUID) (*model.Order, e
 		})
 	}
 
-	s.cache.Set(orderID.String(), order)
+	s.cache.Set(orderID, order)
 
 	return order, nil
 }

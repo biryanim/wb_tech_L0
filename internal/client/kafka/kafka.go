@@ -2,10 +2,12 @@ package kafka
 
 import (
 	"context"
-	"github.com/biryanim/wb_tech_L0/internal/client/kafka/consumer"
+	"github.com/IBM/sarama"
 )
 
+type Handler func(ctx context.Context, msg *sarama.ConsumerMessage) error
+
 type Consumer interface {
-	Consume(ctx context.Context, topicName string, handler consumer.Handler) (err error)
+	Consume(ctx context.Context, topicName string, handler Handler) (err error)
 	Close() error
 }

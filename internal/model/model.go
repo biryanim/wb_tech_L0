@@ -1,12 +1,11 @@
 package model
 
 import (
-	"github.com/google/uuid"
 	"time"
 )
 
 type Order struct {
-	OrderUID          uuid.UUID `json:"order_uid"`
+	OrderUID          string    `json:"order_uid"`
 	TrackNumber       string    `json:"track_number"`
 	Entry             string    `json:"entry"`
 	Delivery          Delivery  `json:"delivery"`
@@ -16,7 +15,7 @@ type Order struct {
 	InternalSignature string    `json:"internal_signature"`
 	CustomerID        string    `json:"customer_id"`
 	DeliveryService   string    `json:"delivery_service"`
-	ShardKey          string    `json:"shard_key"`
+	ShardKey          string    `json:"shardkey"`
 	SmID              int       `json:"sm_id"`
 	DateCreated       time.Time `json:"date_created"`
 	OofShard          string    `json:"oof_shard"`
@@ -33,16 +32,16 @@ type Delivery struct {
 }
 
 type Payment struct {
-	Transaction  uuid.UUID `json:"transaction"`
-	RequestID    string    `json:"request"`
-	Currency     string    `json:"currency"`
-	Provider     string    `json:"provider"`
-	Amount       float64   `json:"amount"`
-	PaymentDt    int64     `json:"payment_dt"`
-	Bank         string    `json:"bank"`
-	DeliveryCost float64   `json:"delivery_cost"`
-	GoodsTotal   int       `json:"goods_total"`
-	CustomFee    float64   `json:"custom_fee"`
+	Transaction  string  `json:"transaction"`
+	RequestID    string  `json:"request"`
+	Currency     string  `json:"currency"`
+	Provider     string  `json:"provider"`
+	Amount       float64 `json:"amount"`
+	PaymentDt    int64   `json:"payment_dt"`
+	Bank         string  `json:"bank"`
+	DeliveryCost float64 `json:"delivery_cost"`
+	GoodsTotal   int     `json:"goods_total"`
+	CustomFee    float64 `json:"custom_fee"`
 }
 
 type Item struct {

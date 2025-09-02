@@ -4,17 +4,16 @@ import (
 	"context"
 
 	"github.com/biryanim/wb_tech_L0/internal/model"
-	"github.com/google/uuid"
 )
 
 type OrderRepository interface {
-	CreateOrder(ctx context.Context, order *model.Order) (uuid.UUID, error)
-	CreateDelivery(ctx context.Context, orderID uuid.UUID, delivery *model.Delivery) (int64, error)
-	CreatePayment(ctx context.Context, orderID uuid.UUID, payment *model.Payment) (int64, error)
-	CreateItem(ctx context.Context, orderID uuid.UUID, items *model.Item) error
+	CreateOrder(ctx context.Context, order *model.Order) (string, error)
+	CreateDelivery(ctx context.Context, orderID string, delivery *model.Delivery) (string, error)
+	CreatePayment(ctx context.Context, orderID string, payment *model.Payment) (string, error)
+	CreateItem(ctx context.Context, orderID string, items *model.Item) error
 
-	GetOrder(ctx context.Context, orderID uuid.UUID) (*model.Order, error)
-	GetDelivery(ctx context.Context, orderID uuid.UUID) (*model.Delivery, error)
-	GetPayment(ctx context.Context, orderID uuid.UUID) (*model.Payment, error)
-	ListItems(ctx context.Context, orderID uuid.UUID) ([]*model.Item, error)
+	GetOrder(ctx context.Context, orderID string) (*model.Order, error)
+	GetDelivery(ctx context.Context, orderID string) (*model.Delivery, error)
+	GetPayment(ctx context.Context, orderID string) (*model.Payment, error)
+	ListItems(ctx context.Context, orderID string) ([]*model.Item, error)
 }

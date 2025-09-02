@@ -6,8 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/biryanim/wb_tech_L0/internal/client/db"
 	"github.com/biryanim/wb_tech_L0/internal/model"
-	"github.com/google/uuid"
-
 	def "github.com/biryanim/wb_tech_L0/internal/repository"
 )
 
@@ -25,7 +23,7 @@ func NewRepository(db db.Client) *repo {
 	}
 }
 
-func (r *repo) CreateOrder(ctx context.Context, order *model.Order) (uuid.UUID, error) {
+func (r *repo) CreateOrder(ctx context.Context, order *model.Order) (string, error) {
 	query, args, err := r.qb.
 		Insert("orders").
 		Columns(
@@ -57,19 +55,19 @@ func (r *repo) CreateOrder(ctx context.Context, order *model.Order) (uuid.UUID, 
 		Suffix("RETURNING \"order_uid\"").
 		ToSql()
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("failed to build insert query: %w", err)
+		return "", fmt.Errorf("failed to build insert query: %w", err)
 	}
 
-	var id uuid.UUID
+	var id string
 	err = r.db.DB().QueryRowContext(ctx, query, args...).Scan(&id)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("failed to insert order: %w", err)
+		return "", fmt.Errorf("failed to insert order: %w", err)
 	}
 
 	return id, nil
 }
 
-func (r *repo) GetOrder(ctx context.Context, orderID uuid.UUID) (*model.Order, error) {
+func (r *repo) GetOrder(ctx context.Context, orderID string) (*model.Order, error) {
 	query, args, err := r.qb.
 		Select(
 			"track_number",
@@ -111,7 +109,7 @@ func (r *repo) GetOrder(ctx context.Context, orderID uuid.UUID) (*model.Order, e
 	return &order, nil
 }
 
-func (r *repo) CreateDelivery(ctx context.Context, orderID uuid.UUID, delivery *model.Delivery) (int64, error) {
+func (r *repo) CreateDelivery(ctx context.Context, orderID string, delivery *model.Delivery) (string, error) {
 	query, args, err := r.qb.
 		Insert("deliveries").
 		Columns(
@@ -137,18 +135,18 @@ func (r *repo) CreateDelivery(ctx context.Context, orderID uuid.UUID, delivery *
 		Suffix("RETURNING \"order_uid\"").
 		ToSql()
 	if err != nil {
-		return int64(0), fmt.Errorf("failed to build insert query: %w", err)
+		return "", fmt.Errorf("failed to build insert query: %w", err)
 	}
-	var id int64
+	var id string
 	err = r.db.DB().QueryRowContext(ctx, query, args...).Scan(&id)
 	if err != nil {
-		return int64(0), fmt.Errorf("failed to insert delivery: %w", err)
+		return "", fmt.Errorf("failed to insert delivery: %w", err)
 	}
 
 	return id, nil
 }
 
-func (r *repo) GetDelivery(ctx context.Context, orderID uuid.UUID) (*model.Delivery, error) {
+func (r *repo) GetDelivery(ctx context.Context, orderID string) (*model.Delivery, error) {
 	query, args, err := r.qb.
 		Select(
 			"name",
@@ -183,7 +181,7 @@ func (r *repo) GetDelivery(ctx context.Context, orderID uuid.UUID) (*model.Deliv
 	return &delivery, nil
 }
 
-func (r *repo) CreatePayment(ctx context.Context, orderID uuid.UUID, payment *model.Payment) (int64, error) {
+func (r *repo) CreatePayment(ctx context.Context, orderID string, payment *model.Payment) (string, error) {
 	query, args, err := r.qb.
 		Insert("payments").
 		Columns(
@@ -215,19 +213,19 @@ func (r *repo) CreatePayment(ctx context.Context, orderID uuid.UUID, payment *mo
 		Suffix("RETURNING order_uid").
 		ToSql()
 	if err != nil {
-		return int64(0), fmt.Errorf("failed to build insert query: %w", err)
+		return "", fmt.Errorf("failed to build insert query: %w", err)
 	}
 
-	var id int64
+	var id string
 	err = r.db.DB().QueryRowContext(ctx, query, args...).Scan(&id)
 	if err != nil {
-		return int64(0), fmt.Errorf("failed to insert payment: %w", err)
+		return "", fmt.Errorf("failed to insert payment: %w", err)
 	}
 
 	return id, nil
 }
 
-func (r *repo) GetPayment(ctx context.Context, orderID uuid.UUID) (*model.Payment, error) {
+func (r *repo) GetPayment(ctx context.Context, orderID string) (*model.Payment, error) {
 	query, args, err := r.qb.
 		Select(
 			"transaction",
@@ -267,7 +265,7 @@ func (r *repo) GetPayment(ctx context.Context, orderID uuid.UUID) (*model.Paymen
 	return &payment, nil
 }
 
-func (r *repo) CreateItem(ctx context.Context, orderID uuid.UUID, item *model.Item) error {
+func (r *repo) CreateItem(ctx context.Context, orderID string, item *model.Item) error {
 	query, args, err := r.qb.
 		Insert("items").
 		Columns(
@@ -311,7 +309,7 @@ func (r *repo) CreateItem(ctx context.Context, orderID uuid.UUID, item *model.It
 	return nil
 }
 
-func (r *repo) ListItems(ctx context.Context, orderID uuid.UUID) ([]*model.Item, error) {
+func (r *repo) ListItems(ctx context.Context, orderID string) ([]*model.Item, error) {
 	query, args, err := r.qb.
 		Select(
 			"chrt_id",

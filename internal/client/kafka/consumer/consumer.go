@@ -2,11 +2,15 @@ package consumer
 
 import (
 	"context"
+	"fmt"
 	"github.com/IBM/sarama"
+	"github.com/biryanim/wb_tech_L0/internal/client/kafka"
 	"github.com/pkg/errors"
 	"log"
 	"strings"
 )
+
+var _ kafka.Consumer = (*consumer)(nil)
 
 type consumer struct {
 	consumerGroup        sarama.ConsumerGroup
@@ -20,7 +24,7 @@ func NewConsumer(consumerGroup sarama.ConsumerGroup, consumerGroupHandler *Group
 	}
 }
 
-func (c *consumer) Consumer(ctx context.Context, topicName string, handler Handler) error {
+func (c *consumer) Consume(ctx context.Context, topicName string, handler kafka.Handler) error {
 	c.consumerGroupHandler.msgHandler = handler
 
 	return c.consume(ctx, topicName)
@@ -34,6 +38,7 @@ func (c *consumer) consume(ctx context.Context, topicName string) error {
 	for {
 		err := c.consumerGroup.Consume(ctx, strings.Split(topicName, "."), c.consumerGroupHandler)
 		if err != nil {
+			fmt.Println(err)
 			if errors.Is(err, sarama.ErrClosedConsumerGroup) {
 				return nil
 			}

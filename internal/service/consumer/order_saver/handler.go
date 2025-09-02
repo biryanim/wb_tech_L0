@@ -45,7 +45,7 @@ func (s *service) OrderSaveHandler(ctx context.Context, msg *sarama.ConsumerMess
 		return err
 	}
 
-	s.cache.Set(order.OrderUID.String(), order)
+	s.cache.Set(order.OrderUID, order)
 
 	return nil
 }

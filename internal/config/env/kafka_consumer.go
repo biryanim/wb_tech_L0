@@ -1,6 +1,7 @@
 package env
 
 import (
+	"fmt"
 	"github.com/IBM/sarama"
 	"github.com/pkg/errors"
 	"os"
@@ -19,6 +20,7 @@ type kafkaConsumerConfig struct {
 
 func NewKafkaConsumerConfig() (*kafkaConsumerConfig, error) {
 	brokersStr := os.Getenv(brokersEnvName)
+	fmt.Println(brokersStr)
 	if len(brokersStr) == 0 {
 		return nil, errors.New("kafka brokers address not found")
 	}
