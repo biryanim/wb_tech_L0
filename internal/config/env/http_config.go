@@ -19,6 +19,7 @@ type httpConfig struct {
 	port string
 }
 
+// NewHTTPConfig creates and returns a new HTTP configuration by reading host and port from environment variables.
 func NewHTTPConfig() (config.HTTPConfig, error) {
 	host := os.Getenv(httpHostEnvName)
 	if len(host) == 0 {
@@ -36,6 +37,7 @@ func NewHTTPConfig() (config.HTTPConfig, error) {
 	}, nil
 }
 
+// Address returns the complete server address in the format "host:port".
 func (c *httpConfig) Address() string {
 	return net.JoinHostPort(c.host, c.port)
 }

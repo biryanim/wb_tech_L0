@@ -6,6 +6,7 @@ import (
 	"github.com/biryanim/wb_tech_L0/internal/model"
 )
 
+// OrderRepository defines methods for persisting and retrieving order data from the database.
 type OrderRepository interface {
 	CreateOrder(ctx context.Context, order *model.Order) (string, error)
 	CreateDelivery(ctx context.Context, orderID string, delivery *model.Delivery) (string, error)

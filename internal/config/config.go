@@ -5,20 +5,24 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// PGConfig defines methods for retrieving PostgreSQL database configuration.
 type PGConfig interface {
 	DSN() string
 }
 
+// HTTPConfig defines methods for retrieving HTTP server configuration.
 type HTTPConfig interface {
 	Address() string
 }
 
+// KafkaConsumerConfig defines methods for retrieving Kafka consumer configuration.
 type KafkaConsumerConfig interface {
 	Brokers() []string
 	GroupID() string
 	Config() *sarama.Config
 }
 
+// Load reads and parses environment variables from the specified file path using godotenv.
 func Load(path string) error {
 	err := godotenv.Load(path)
 	if err != nil {

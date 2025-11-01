@@ -1,9 +1,10 @@
-package lru_cache
+package lrucache
 
 import (
-	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLRU_SetExistingElementToFullCache(t *testing.T) {

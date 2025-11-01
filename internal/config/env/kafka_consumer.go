@@ -1,10 +1,11 @@
 package env
 
 import (
-	"github.com/IBM/sarama"
-	"github.com/pkg/errors"
 	"os"
 	"strings"
+
+	"github.com/IBM/sarama"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -17,6 +18,7 @@ type kafkaConsumerConfig struct {
 	groupID string
 }
 
+// NewKafkaConsumerConfig creates and returns a new Kafka consumer configuration by reading broker addresses and group ID from environment variables.
 func NewKafkaConsumerConfig() (*kafkaConsumerConfig, error) {
 	brokersStr := os.Getenv(brokersEnvName)
 	if len(brokersStr) == 0 {
@@ -33,14 +35,17 @@ func NewKafkaConsumerConfig() (*kafkaConsumerConfig, error) {
 	return &kafkaConsumerConfig{brokers, groupID}, nil
 }
 
+// Brokers returns the list of Kafka broker addresses.
 func (cfg *kafkaConsumerConfig) Brokers() []string {
 	return cfg.brokers
 }
 
+// GroupID returns the consumer group identifier.
 func (cfg *kafkaConsumerConfig) GroupID() string {
 	return cfg.groupID
 }
 
+// Config returns a configured Sarama consumer configuration with version 2.6.0.0, round-robin rebalancing, and oldest offset strategy.
 func (cfg *kafkaConsumerConfig) Config() *sarama.Config {
 	config := sarama.NewConfig()
 	config.Version = sarama.V2_6_0_0

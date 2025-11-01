@@ -2,11 +2,12 @@ package consumer
 
 import (
 	"context"
+	"log"
+	"strings"
+
 	"github.com/IBM/sarama"
 	"github.com/biryanim/wb_tech_L0/internal/client/kafka"
 	"github.com/pkg/errors"
-	"log"
-	"strings"
 )
 
 var _ kafka.Consumer = (*consumer)(nil)
@@ -16,6 +17,7 @@ type consumer struct {
 	consumerGroupHandler *GroupHandler
 }
 
+// NewConsumer creates and returns a new Kafka consumer with the provided consumer group and handler.
 func NewConsumer(consumerGroup sarama.ConsumerGroup, consumerGroupHandler *GroupHandler) *consumer {
 	return &consumer{
 		consumerGroup:        consumerGroup,
@@ -23,12 +25,14 @@ func NewConsumer(consumerGroup sarama.ConsumerGroup, consumerGroupHandler *Group
 	}
 }
 
+// Consume starts consuming messages from the specified topic and processes them with the provided handler.
 func (c *consumer) Consume(ctx context.Context, topicName string, handler kafka.Handler) error {
 	c.consumerGroupHandler.msgHandler = handler
 
 	return c.consume(ctx, topicName)
 }
 
+// Close closes the consumer group and releases associated resources.
 func (c *consumer) Close() error {
 	return c.consumerGroup.Close()
 }

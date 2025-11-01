@@ -9,7 +9,7 @@ build:
 
 install-deps:
 	GOBIN=$(LOCAL_BIN) go install github.com/pressly/goose/v3/cmd/goose@v3.20.0
-
+	GOBIN=$(LOCAL_BIN) go install golang.org/x/lint/golint@latest
 
 migration-status:
 	$(LOCAL_BIN)/goose -dir ${MIGRATION_DIR} postgres ${MIGRATION_DSN} status -v
@@ -19,3 +19,22 @@ migration-up:
 
 migration-down:
 	$(LOCAL_BIN)/goose -dir ${MIGRATION_DIR} postgres ${MIGRATION_DSN} down -v
+
+
+check: fmt vet lint sort_import
+	go mod tidy
+
+sort_import:
+	goimports -w cmd/* internal/*
+
+vet:
+	go vet ./...
+
+lint: install-deps
+	$(LOCAL_BIN)/golint ./...
+
+fmt:
+	go fmt ./...
+
+test:
+	cd internal/ && go test -v ./...

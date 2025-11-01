@@ -3,6 +3,7 @@ package order
 import (
 	"context"
 	"fmt"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/biryanim/wb_tech_L0/internal/client/db"
 	"github.com/biryanim/wb_tech_L0/internal/model"
@@ -16,6 +17,7 @@ type repo struct {
 	qb squirrel.StatementBuilderType
 }
 
+// NewRepository creates and returns a new order repository with the provided database client.
 func NewRepository(db db.Client) *repo {
 	return &repo{
 		db: db,
@@ -23,6 +25,7 @@ func NewRepository(db db.Client) *repo {
 	}
 }
 
+// CreateOrder inserts a new order into the database and returns the order ID.
 func (r *repo) CreateOrder(ctx context.Context, order *model.Order) (string, error) {
 	query, args, err := r.qb.
 		Insert("orders").
@@ -67,6 +70,7 @@ func (r *repo) CreateOrder(ctx context.Context, order *model.Order) (string, err
 	return id, nil
 }
 
+// GetOrder retrieves a complete order by ID from the database.
 func (r *repo) GetOrder(ctx context.Context, orderID string) (*model.Order, error) {
 	query, args, err := r.qb.
 		Select(
@@ -109,6 +113,7 @@ func (r *repo) GetOrder(ctx context.Context, orderID string) (*model.Order, erro
 	return &order, nil
 }
 
+// CreateDelivery inserts delivery information for an order and returns the delivery ID.
 func (r *repo) CreateDelivery(ctx context.Context, orderID string, delivery *model.Delivery) (string, error) {
 	query, args, err := r.qb.
 		Insert("deliveries").
@@ -146,6 +151,7 @@ func (r *repo) CreateDelivery(ctx context.Context, orderID string, delivery *mod
 	return id, nil
 }
 
+// GetDelivery retrieves delivery information for a specific order from the database.
 func (r *repo) GetDelivery(ctx context.Context, orderID string) (*model.Delivery, error) {
 	query, args, err := r.qb.
 		Select(
@@ -181,6 +187,7 @@ func (r *repo) GetDelivery(ctx context.Context, orderID string) (*model.Delivery
 	return &delivery, nil
 }
 
+// CreatePayment inserts payment information for an order and returns the payment ID.
 func (r *repo) CreatePayment(ctx context.Context, orderID string, payment *model.Payment) (string, error) {
 	query, args, err := r.qb.
 		Insert("payments").
@@ -225,6 +232,7 @@ func (r *repo) CreatePayment(ctx context.Context, orderID string, payment *model
 	return id, nil
 }
 
+// GetPayment retrieves payment information for a specific order from the database.
 func (r *repo) GetPayment(ctx context.Context, orderID string) (*model.Payment, error) {
 	query, args, err := r.qb.
 		Select(
@@ -265,6 +273,7 @@ func (r *repo) GetPayment(ctx context.Context, orderID string) (*model.Payment, 
 	return &payment, nil
 }
 
+// CreateItem inserts an item associated with an order into the database.
 func (r *repo) CreateItem(ctx context.Context, orderID string, item *model.Item) error {
 	query, args, err := r.qb.
 		Insert("items").
@@ -309,6 +318,7 @@ func (r *repo) CreateItem(ctx context.Context, orderID string, item *model.Item)
 	return nil
 }
 
+// ListItems retrieves all items associated with a specific order from the database.
 func (r *repo) ListItems(ctx context.Context, orderID string) ([]*model.Item, error) {
 	query, args, err := r.qb.
 		Select(
@@ -368,6 +378,7 @@ func (r *repo) ListItems(ctx context.Context, orderID string) ([]*model.Item, er
 	return items, nil
 }
 
+// ListOrdersByLastAdded retrieves the most recently added orders from the database, limited by the specified count.
 func (r *repo) ListOrdersByLastAdded(ctx context.Context, limit int) ([]*model.Order, error) {
 	query, args, err := r.qb.
 		Select(

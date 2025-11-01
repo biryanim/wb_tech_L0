@@ -2,11 +2,14 @@ package kafka
 
 import (
 	"context"
+
 	"github.com/IBM/sarama"
 )
 
+// Handler is a function type that processes Kafka consumer messages within a given context.
 type Handler func(ctx context.Context, msg *sarama.ConsumerMessage) error
 
+// Consumer defines methods for consuming messages from Kafka topics.
 type Consumer interface {
 	Consume(ctx context.Context, topicName string, handler Handler) (err error)
 	Close() error

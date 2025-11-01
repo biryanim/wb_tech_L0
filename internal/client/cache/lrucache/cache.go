@@ -1,18 +1,21 @@
-package lru_cache
+package lrucache
 
 import (
 	"container/list"
-	"github.com/biryanim/wb_tech_L0/internal/client/cache"
 	"sync"
+
+	"github.com/biryanim/wb_tech_L0/internal/client/cache"
 )
 
 var _ cache.Client = (*Cache)(nil)
 
+// Item represents a single cache entry with a key-value pair.
 type Item struct {
 	Key   string
 	Value interface{}
 }
 
+// Cache implements an LRU (Least Recently Used) cache with thread-safe operations.
 type Cache struct {
 	capacity int
 	queue    *list.List
@@ -20,6 +23,7 @@ type Cache struct {
 	items    map[string]*list.Element
 }
 
+// New creates and returns a new Cache instance with the specified capacity.
 func New(capacity int) *Cache {
 	return &Cache{
 		capacity: capacity,
@@ -29,6 +33,7 @@ func New(capacity int) *Cache {
 	}
 }
 
+// Set stores or updates a value in the cache with the given key.
 func (c *Cache) Set(key string, value interface{}) bool {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -54,6 +59,7 @@ func (c *Cache) Set(key string, value interface{}) bool {
 	return true
 }
 
+// Get retrieves a value from the cache by key and moves it to the front as most recently used.
 func (c *Cache) Get(key string) interface{} {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
@@ -67,6 +73,7 @@ func (c *Cache) Get(key string) interface{} {
 	return element.Value.(*Item).Value
 }
 
+// Remove deletes a value from the cache by key and returns true if the key existed.
 func (c *Cache) Remove(key string) bool {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()

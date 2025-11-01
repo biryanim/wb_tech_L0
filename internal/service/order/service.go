@@ -3,6 +3,7 @@ package order
 import (
 	"context"
 	"fmt"
+
 	"github.com/biryanim/wb_tech_L0/internal/client/cache"
 	"github.com/biryanim/wb_tech_L0/internal/client/db"
 	"github.com/biryanim/wb_tech_L0/internal/model"
@@ -18,6 +19,7 @@ type serv struct {
 	cache           cache.Client
 }
 
+// NewService creates and returns a new order service with the provided dependencies.
 func NewService(orderRepository repository.OrderRepository, txManager db.TxManager, cache cache.Client) *serv {
 	return &serv{
 		orderRepository: orderRepository,
@@ -26,6 +28,7 @@ func NewService(orderRepository repository.OrderRepository, txManager db.TxManag
 	}
 }
 
+// GetOrder retrieves an order by ID, first checking the cache and falling back to the database if not found.
 func (s *serv) GetOrder(ctx context.Context, orderID string) (*model.Order, error) {
 	if cached := s.cache.Get(orderID); cached != nil {
 		if ord, ok := cached.(*model.Order); ok {
@@ -116,6 +119,7 @@ func (s *serv) GetOrder(ctx context.Context, orderID string) (*model.Order, erro
 	return order, nil
 }
 
+// RestoreCache populates the cache with the most recently added orders from the database.
 func (s *serv) RestoreCache(ctx context.Context, limit int) error {
 	orders, err := s.orderRepository.ListOrdersByLastAdded(ctx, limit)
 	if err != nil {

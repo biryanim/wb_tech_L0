@@ -2,9 +2,16 @@ package main
 
 import (
 	"context"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+
 	"github.com/IBM/sarama"
 	"github.com/biryanim/wb_tech_L0/internal/api"
-	"github.com/biryanim/wb_tech_L0/internal/client/cache/lru_cache"
+	"github.com/biryanim/wb_tech_L0/internal/client/cache/lrucache"
 	"github.com/biryanim/wb_tech_L0/internal/client/db/pg"
 	"github.com/biryanim/wb_tech_L0/internal/client/db/transaction"
 	kafkaConsumer "github.com/biryanim/wb_tech_L0/internal/client/kafka/consumer"
@@ -12,16 +19,10 @@ import (
 	"github.com/biryanim/wb_tech_L0/internal/config/env"
 	orderRepo "github.com/biryanim/wb_tech_L0/internal/repository/order"
 	"github.com/biryanim/wb_tech_L0/internal/service"
-	orderSaverConsumer "github.com/biryanim/wb_tech_L0/internal/service/consumer/order_saver"
+	orderSaverConsumer "github.com/biryanim/wb_tech_L0/internal/service/consumer/ordersaver"
 	"github.com/biryanim/wb_tech_L0/internal/service/order"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
 )
 
 const cacheCap = 5
@@ -67,7 +68,7 @@ func main() {
 	}
 	defer dbcClient.Close()
 
-	cacheClient := lru_cache.New(cacheCap)
+	cacheClient := lrucache.New(cacheCap)
 
 	txManager := transaction.NewTransactionManager(dbcClient.DB())
 	orderRepository := orderRepo.NewRepository(dbcClient)
@@ -126,7 +127,7 @@ func gracefulShutdown(ctx context.Context, cancel context.CancelFunc, httpServer
 	}
 
 	if httpServer != nil {
-		httpServer.Shutdown(ctx)
+		_ = httpServer.Shutdown(ctx)
 	}
 
 	cancel()

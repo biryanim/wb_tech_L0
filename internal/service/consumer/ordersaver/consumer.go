@@ -1,7 +1,8 @@
-package order_saver
+package ordersaver
 
 import (
 	"context"
+
 	"github.com/biryanim/wb_tech_L0/internal/client/cache"
 	"github.com/biryanim/wb_tech_L0/internal/client/db"
 	"github.com/biryanim/wb_tech_L0/internal/client/kafka"
@@ -18,6 +19,7 @@ type service struct {
 	cache           cache.Client
 }
 
+// NewService creates and returns a new order saver service with the provided dependencies.
 func NewService(orderRepository repository.OrderRepository, consumer kafka.Consumer, txManager db.TxManager, cache cache.Client) *service {
 	return &service{
 		orderRepository: orderRepository,
@@ -27,6 +29,7 @@ func NewService(orderRepository repository.OrderRepository, consumer kafka.Consu
 	}
 }
 
+// RunConsumer starts the consumer loop that processes Kafka messages until the context is cancelled.
 func (s *service) RunConsumer(ctx context.Context) error {
 	for {
 		select {

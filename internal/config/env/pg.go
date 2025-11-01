@@ -1,8 +1,9 @@
 package env
 
 import (
-	"github.com/pkg/errors"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 const (
@@ -13,6 +14,7 @@ type pgConfig struct {
 	dsn string
 }
 
+// NewPGConfig creates and returns a new PostgreSQL configuration by reading the DSN from the PG_DSN environment variable.
 func NewPGConfig() (*pgConfig, error) {
 	dsn := os.Getenv(dsnEnvName)
 	if len(dsn) == 0 {
@@ -22,6 +24,7 @@ func NewPGConfig() (*pgConfig, error) {
 	return &pgConfig{dsn: dsn}, nil
 }
 
+// DSN returns the database source name (connection string) for PostgreSQL.
 func (cfg *pgConfig) DSN() string {
 	return cfg.dsn
 }

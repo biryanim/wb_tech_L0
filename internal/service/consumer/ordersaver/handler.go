@@ -1,12 +1,14 @@
-package order_saver
+package ordersaver
 
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/IBM/sarama"
 	"github.com/biryanim/wb_tech_L0/internal/model"
 )
 
+// OrderSaveHandler processes a Kafka message containing order data, persists it to the database within a transaction, and caches the order.
 func (s *service) OrderSaveHandler(ctx context.Context, msg *sarama.ConsumerMessage) error {
 	order := &model.Order{}
 	err := json.Unmarshal(msg.Value, order)
@@ -14,7 +16,6 @@ func (s *service) OrderSaveHandler(ctx context.Context, msg *sarama.ConsumerMess
 		return err
 	}
 
-	//var id uuid.UUID
 	err = s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		_, err = s.orderRepository.CreateOrder(ctx, order)
 		if err != nil {

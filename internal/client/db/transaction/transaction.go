@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"context"
+
 	"github.com/biryanim/wb_tech_L0/internal/client/db"
 	"github.com/biryanim/wb_tech_L0/internal/client/db/pg"
 	"github.com/jackc/pgx/v5"
@@ -12,12 +13,14 @@ type manager struct {
 	db db.Transactor
 }
 
+// NewTransactionManager creates and returns a new transaction manager with the provided transactor.
 func NewTransactionManager(db db.Transactor) db.TxManager {
 	return &manager{
 		db: db,
 	}
 }
 
+// ReadCommited executes the handler function within a read-committed isolation level transaction.
 func (m *manager) ReadCommited(cxt context.Context, f db.Handler) error {
 	txOpts := pgx.TxOptions{
 		IsoLevel: pgx.ReadCommitted,
