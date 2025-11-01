@@ -60,13 +60,23 @@ func main() {
 	}
 	consumerGroupHandler := kafkaConsumer.NewGroupHandler()
 	consumer := kafkaConsumer.NewConsumer(consumerGroup, consumerGroupHandler)
-	defer consumer.Close()
+	defer func() {
+		err = consumer.Close()
+		if err != nil {
+			log.Fatalf("failed to close consumer: %v", err)
+		}
+	}()
 
 	dbcClient, err := pg.New(ctx, pgConfig.DSN())
 	if err != nil {
 		log.Fatalf("failed to initialize db client: %v", err)
 	}
-	defer dbcClient.Close()
+	defer func() {
+		err = dbcClient.Close()
+		if err != nil {
+			log.Fatalf("failed to close db client: %v", err)
+		}
+	}()
 
 	cacheClient := lrucache.New(cacheCap)
 
