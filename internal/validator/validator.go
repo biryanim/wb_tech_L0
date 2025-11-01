@@ -2,12 +2,13 @@ package validator
 
 import (
 	"fmt"
-	"github.com/biryanim/wb_tech_L0/internal/model"
-	"github.com/hashicorp/go-uuid"
 	"net/mail"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/biryanim/wb_tech_L0/internal/model"
+	"github.com/hashicorp/go-uuid"
 )
 
 // ValidationError represents validation error

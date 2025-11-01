@@ -3,11 +3,12 @@ package producer
 import (
 	"context"
 	"encoding/json"
+	"log"
+	"time"
+
 	"github.com/IBM/sarama"
 	"github.com/biryanim/wb_tech_L0/internal/client/kafka"
 	"github.com/pkg/errors"
-	"log"
-	"time"
 )
 
 var _ kafka.Producer = (*producer)(nil)

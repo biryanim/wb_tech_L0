@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+
 	"github.com/IBM/sarama"
 	"github.com/biryanim/wb_tech_L0/internal/client/kafka"
 	"github.com/biryanim/wb_tech_L0/internal/model"
 	"github.com/biryanim/wb_tech_L0/internal/validator"
-	"log"
 )
 
 // OrderSaveHandler processes a Kafka message containing order data, persists it to the database within a transaction, and caches the order.
@@ -16,7 +17,7 @@ func (s *service) OrderSaveHandler(ctx context.Context, msg *sarama.ConsumerMess
 	order := &model.Order{}
 	err := json.Unmarshal(msg.Value, order)
 	if err != nil {
-		return err
+		return s.sendToDLQ(ctx, msg, fmt.Sprintf("failed to unmarshal order: %v", err))
 	}
 
 	validationResult := validator.ValidateOrder(order)
