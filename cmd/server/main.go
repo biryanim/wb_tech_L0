@@ -15,6 +15,7 @@ import (
 	"github.com/biryanim/wb_tech_L0/internal/client/db/pg"
 	"github.com/biryanim/wb_tech_L0/internal/client/db/transaction"
 	kafkaConsumer "github.com/biryanim/wb_tech_L0/internal/client/kafka/consumer"
+	kafkaProducer "github.com/biryanim/wb_tech_L0/internal/client/kafka/producer"
 	"github.com/biryanim/wb_tech_L0/internal/config"
 	"github.com/biryanim/wb_tech_L0/internal/config/env"
 	orderRepo "github.com/biryanim/wb_tech_L0/internal/repository/order"
@@ -67,6 +68,18 @@ func main() {
 		}
 	}()
 
+	producer, err := newSyncProducer(kafkaConsumerConfig.Brokers())
+	if err != nil {
+		log.Fatalf("failed to create sync producer: %v", err)
+	}
+	syncProducer := kafkaProducer.NewProducer(producer)
+	defer func() {
+		err = syncProducer.Close()
+		if err != nil {
+			log.Fatalf("failed to close sync producer: %v", err)
+		}
+	}()
+
 	dbcClient, err := pg.New(ctx, pgConfig.DSN())
 	if err != nil {
 		log.Fatalf("failed to initialize db client: %v", err)
@@ -82,7 +95,7 @@ func main() {
 
 	txManager := transaction.NewTransactionManager(dbcClient.DB())
 	orderRepository := orderRepo.NewRepository(dbcClient)
-	ordSaverConsumer := orderSaverConsumer.NewService(orderRepository, consumer, txManager, cacheClient)
+	ordSaverConsumer := orderSaverConsumer.NewService(orderRepository, consumer, txManager, cacheClient, syncProducer)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
@@ -158,4 +171,18 @@ func restoreCache(ctx context.Context, cacheCap int, serv service.OrderService) 
 		return err
 	}
 	return nil
+}
+
+func newSyncProducer(brokerList []string) (sarama.SyncProducer, error) {
+	cfg := sarama.NewConfig()
+	cfg.Producer.RequiredAcks = sarama.WaitForAll
+	cfg.Producer.Retry.Max = 5
+	cfg.Producer.Return.Successes = true
+
+	producer, err := sarama.NewSyncProducer(brokerList, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return producer, nil
 }

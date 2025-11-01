@@ -15,17 +15,19 @@ var _ def.ConsumerService = (*service)(nil)
 type service struct {
 	orderRepository repository.OrderRepository
 	consumer        kafka.Consumer
+	producer        kafka.Producer
 	txManager       db.TxManager
 	cache           cache.Client
 }
 
 // NewService creates and returns a new order saver service with the provided dependencies.
-func NewService(orderRepository repository.OrderRepository, consumer kafka.Consumer, txManager db.TxManager, cache cache.Client) *service {
+func NewService(orderRepository repository.OrderRepository, consumer kafka.Consumer, txManager db.TxManager, cache cache.Client, producer kafka.Producer) *service {
 	return &service{
 		orderRepository: orderRepository,
 		consumer:        consumer,
 		txManager:       txManager,
 		cache:           cache,
+		producer:        producer,
 	}
 }
 

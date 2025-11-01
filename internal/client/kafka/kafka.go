@@ -14,3 +14,17 @@ type Consumer interface {
 	Consume(ctx context.Context, topicName string, handler Handler) (err error)
 	Close() error
 }
+
+type Producer interface {
+	SendToDLQ(ctx context.Context, message *DLQMessage, topic string) error
+	Close() error
+}
+
+type DLQMessage struct {
+	OriginalMessage []byte
+	Topic           string
+	ErrorReason     string
+	Timestamp       int64
+	Partition       int32
+	Offset          int64
+}
