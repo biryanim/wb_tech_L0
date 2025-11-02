@@ -5,6 +5,7 @@ go 1.24.1
 require (
 	github.com/IBM/sarama v1.45.2
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/brianvoe/gofakeit/v7 v7.8.2
 	github.com/gin-gonic/gin v1.10.1
 	github.com/gojuno/minimock/v3 v3.4.7
 	github.com/hashicorp/go-uuid v1.0.3

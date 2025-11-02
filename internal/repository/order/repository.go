@@ -4,10 +4,19 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/pkg/errors"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/biryanim/wb_tech_L0/internal/client/db"
 	"github.com/biryanim/wb_tech_L0/internal/model"
 	def "github.com/biryanim/wb_tech_L0/internal/repository"
+)
+
+var (
+	ErrOrderNotFound    = errors.New("order not found")
+	ErrDeliveryNotFound = errors.New("delivery not found")
+	ErrPaymentNotFound  = errors.New("payment not found")
 )
 
 var _ def.OrderRepository = (*repo)(nil)
@@ -106,6 +115,9 @@ func (r *repo) GetOrder(ctx context.Context, orderID string) (*model.Order, erro
 		&order.OofShard,
 	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrOrderNotFound
+		}
 		return nil, fmt.Errorf("failed to query order: %w", err)
 	}
 	order.OrderUID = orderID
@@ -181,6 +193,9 @@ func (r *repo) GetDelivery(ctx context.Context, orderID string) (*model.Delivery
 		&delivery.Email,
 	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrDeliveryNotFound
+		}
 		return nil, fmt.Errorf("failed to query delivery: %w", err)
 	}
 
@@ -268,6 +283,9 @@ func (r *repo) GetPayment(ctx context.Context, orderID string) (*model.Payment, 
 		&payment.CustomFee,
 	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrPaymentNotFound
+		}
 		return nil, fmt.Errorf("failed to query payment: %w", err)
 	}
 	return &payment, nil

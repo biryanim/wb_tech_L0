@@ -41,9 +41,6 @@ func (s *serv) GetOrder(ctx context.Context, orderID string) (*model.Order, erro
 	if err != nil {
 		return nil, fmt.Errorf("failed to get order: %w", err)
 	}
-	if orderModel == nil {
-		return nil, fmt.Errorf("order not found")
-	}
 
 	order := &model.Order{
 		OrderUID:          orderModel.OrderUID,
