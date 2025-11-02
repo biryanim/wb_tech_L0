@@ -163,6 +163,7 @@ func (s *serv) RestoreCache(ctx context.Context, limit int) error {
 		if err != nil {
 			return fmt.Errorf("failed to get items: %w", err)
 		}
+		orders[i].Items = make([]model.Item, 0, len(items))
 		for _, itemModel := range items {
 			orders[i].Items = append(orders[i].Items, model.Item{
 				ChrtID:      itemModel.ChrtID,
