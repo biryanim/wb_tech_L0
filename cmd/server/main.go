@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/biryanim/wb_tech_L0/internal/metric"
+	"github.com/biryanim/wb_tech_L0/internal/middleware"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net/http"
 	"os"
@@ -91,6 +94,11 @@ func main() {
 		}
 	}()
 
+	err = metric.Init(ctx)
+	if err != nil {
+		log.Fatalf("failed to init metrics: %v", err)
+	}
+
 	cacheClient := lrucache.New(cacheCap)
 
 	txManager := transaction.NewTransactionManager(dbcClient.DB())
@@ -114,10 +122,12 @@ func main() {
 
 	err = restoreCache(ctx, cacheCap, orderService)
 	if err != nil {
-		log.Printf("failed to restore cache: %s", err.Error())
+		log.Fatalf("failed to restore cache: %s", err.Error())
 	}
 
 	router := gin.Default()
+	router.Use(middleware.MetricMiddleware())
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	router.GET("order/:order_uid", orderImpl.GetOrder)
 	router.Static("/static", "./static")
 	router.LoadHTMLGlob("templates/*")

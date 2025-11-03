@@ -7,6 +7,19 @@ services:
       - "5432:5432"
     volumes:
       - pg_orders_volume:/var/lib/postgresql/data
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+      - ./alerts.yaml:/etc/prometheus//alerts.yml
+      - prometheus_data:/prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.1
     hostname: zookeeper
@@ -48,3 +61,4 @@ services:
 
 volumes:
   pg_orders_volume:
+  prometheus_data:
