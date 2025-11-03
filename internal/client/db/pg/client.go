@@ -2,6 +2,9 @@ package pg
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/exaring/otelpgx"
 
 	"github.com/biryanim/wb_tech_L0/internal/client/db"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -13,12 +16,15 @@ type pgClient struct {
 }
 
 // New creates and returns a new PostgreSQL client connection using the provided DSN.
-func New(ctx context.Context, dsn string) (db.Client, error) {
-	dbc, err := pgxpool.New(ctx, dsn)
+func New(ctx context.Context, config *pgxpool.Config) (db.Client, error) {
+	dbc, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		return nil, errors.Errorf("failed to connect to database: %v", err)
 	}
 
+	if err = otelpgx.RecordStats(dbc); err != nil {
+		return nil, fmt.Errorf("failed to record database stats: %v", err)
+	}
 	return &pgClient{
 		masterDBC: NewDB(dbc),
 	}, nil

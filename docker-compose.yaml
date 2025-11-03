@@ -19,6 +19,12 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  jaeger:
+    image: jaegertracing/all-in-one
+    ports:
+      - "14268:14268"
+      - "16686:16686"
+
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.1

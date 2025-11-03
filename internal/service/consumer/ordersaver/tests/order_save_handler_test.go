@@ -48,7 +48,7 @@ func Test_OrderSaveHandler(t *testing.T) {
    			"entry": "WBIL",
    			"delivery": {
       			"name": "Test Testov",
-      			"phone": "+9720000000",
+      			"phone": "9720000000",
       			"zip": "2639809",
       			"city": "Kiryat Mozkin",
       			"address": "Ploshad Mira 15",
@@ -95,7 +95,7 @@ func Test_OrderSaveHandler(t *testing.T) {
 
 		delivery = &model.Delivery{
 			Name:    "Test Testov",
-			Phone:   "+9720000000",
+			Phone:   "9720000000",
 			Zip:     "2639809",
 			City:    "Kiryat Mozkin",
 			Address: "Ploshad Mira 15",

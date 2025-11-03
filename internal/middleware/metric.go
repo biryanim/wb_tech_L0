@@ -1,11 +1,12 @@
 package middleware
 
 import (
-	"github.com/biryanim/wb_tech_L0/internal/metric"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/biryanim/wb_tech_L0/internal/metric"
+	"github.com/gin-gonic/gin"
 )
 
 func MetricMiddleware() gin.HandlerFunc {

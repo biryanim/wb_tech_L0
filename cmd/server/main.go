@@ -2,15 +2,20 @@ package main
 
 import (
 	"context"
-	"github.com/biryanim/wb_tech_L0/internal/metric"
-	"github.com/biryanim/wb_tech_L0/internal/middleware"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+
+	"github.com/biryanim/wb_tech_L0/internal/metric"
+	"github.com/biryanim/wb_tech_L0/internal/middleware"
+	"github.com/biryanim/wb_tech_L0/internal/tracing"
+	"github.com/exaring/otelpgx"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 
 	"github.com/IBM/sarama"
 	"github.com/biryanim/wb_tech_L0/internal/api"
@@ -54,6 +59,21 @@ func main() {
 		log.Fatalf("failed to load kafka consumer config: %v", err)
 	}
 
+	jaegerConfig, err := env.NewJaegerConfig()
+	if err != nil {
+		log.Fatalf("failed to load jaeger config: %v", err)
+	}
+
+	err = metric.Init(ctx)
+	if err != nil {
+		log.Fatalf("failed to init metrics: %v", err)
+	}
+
+	tracer, err := tracing.InitTracer(jaegerConfig.URL(), jaegerConfig.ServiceName())
+	if err != nil {
+		log.Fatalf("failed to init tracer: %v", err)
+	}
+
 	consumerGroup, err := sarama.NewConsumerGroup(
 		kafkaConsumerConfig.Brokers(),
 		kafkaConsumerConfig.GroupID(),
@@ -62,7 +82,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create consumer group: %v", err)
 	}
-	consumerGroupHandler := kafkaConsumer.NewGroupHandler()
+	consumerGroupHandler := kafkaConsumer.NewGroupHandler(tracer)
 	consumer := kafkaConsumer.NewConsumer(consumerGroup, consumerGroupHandler)
 	defer func() {
 		err = consumer.Close()
@@ -75,7 +95,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create sync producer: %v", err)
 	}
-	syncProducer := kafkaProducer.NewProducer(producer)
+	syncProducer := kafkaProducer.NewProducer(producer, tracer)
 	defer func() {
 		err = syncProducer.Close()
 		if err != nil {
@@ -83,7 +103,12 @@ func main() {
 		}
 	}()
 
-	dbcClient, err := pg.New(ctx, pgConfig.DSN())
+	cfg, err := pgxpool.ParseConfig(pgConfig.DSN())
+	if err != nil {
+		log.Fatalf("failed to parse config: %v", err)
+	}
+	cfg.ConnConfig.Tracer = otelpgx.NewTracer()
+	dbcClient, err := pg.New(ctx, cfg)
 	if err != nil {
 		log.Fatalf("failed to initialize db client: %v", err)
 	}
@@ -93,11 +118,6 @@ func main() {
 			log.Fatalf("failed to close db client: %v", err)
 		}
 	}()
-
-	err = metric.Init(ctx)
-	if err != nil {
-		log.Fatalf("failed to init metrics: %v", err)
-	}
 
 	cacheClient := lrucache.New(cacheCap)
 
@@ -126,6 +146,7 @@ func main() {
 	}
 
 	router := gin.Default()
+	router.Use(otelgin.Middleware("order_service"))
 	router.Use(middleware.MetricMiddleware())
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	router.GET("order/:order_uid", orderImpl.GetOrder)

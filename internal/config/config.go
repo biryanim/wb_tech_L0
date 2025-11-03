@@ -22,6 +22,11 @@ type KafkaConsumerConfig interface {
 	Config() *sarama.Config
 }
 
+type JaegerConfig interface {
+	URL() string
+	ServiceName() string
+}
+
 // Load reads and parses environment variables from the specified file path using godotenv.
 func Load(path string) error {
 	err := godotenv.Load(path)
