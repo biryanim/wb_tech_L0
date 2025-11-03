@@ -2,6 +2,8 @@ package tests
 
 import (
 	"context"
+	"time"
+
 	"github.com/biryanim/wb_tech_L0/internal/client/cache"
 	cacheMock "github.com/biryanim/wb_tech_L0/internal/client/cache/mocks"
 	"github.com/biryanim/wb_tech_L0/internal/client/db"
@@ -13,7 +15,6 @@ import (
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
-	"time"
 
 	"testing"
 )

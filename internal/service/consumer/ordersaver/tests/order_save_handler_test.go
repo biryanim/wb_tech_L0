@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/IBM/sarama"
 	"github.com/biryanim/wb_tech_L0/internal/client/cache"
 	cacheMock "github.com/biryanim/wb_tech_L0/internal/client/cache/mocks"
@@ -18,8 +21,6 @@ import (
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func Test_OrderSaveHandler(t *testing.T) {

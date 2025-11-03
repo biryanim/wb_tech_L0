@@ -8,10 +8,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/brianvoe/gofakeit/v7"
+
 	"github.com/IBM/sarama"
 )
 
-// Структуры данных (те же, что и в основном сервисе)
 type Order struct {
 	OrderUID          string    `json:"order_uid"`
 	TrackNumber       string    `json:"track_number"`
@@ -66,7 +67,6 @@ type Item struct {
 	Status      int     `json:"status"`
 }
 
-// Тестовые данные
 var (
 	cities = []string{"Moscow", "Saint Petersburg", "Novosibirsk", "Yekaterinburg", "Kazan", "Nizhny Novgorod", "Chelyabinsk", "Samara", "Omsk", "Rostov-on-Don"}
 	names  = []string{"Ivan Petrov", "Maria Sidorova", "Alexey Kozlov", "Elena Volkova", "Dmitry Smirnov", "Anna Kuznetsova", "Pavel Morozov", "Olga Novikova"}
@@ -75,8 +75,81 @@ var (
 	banks  = []string{"Sberbank", "VTB", "Gazprombank", "Alfa Bank", "Raiffeisen", "Tinkoff"}
 )
 
-// generateRandomOrder создает случайный заказ
-func generateRandomOrder() Order {
+func generateValidOrder() Order {
+	var (
+		orderUID        = gofakeit.UUID()
+		trackNumber     = gofakeit.LetterN(10)
+		entry           = gofakeit.LetterN(4)
+		locale          = gofakeit.LanguageAbbreviation()
+		customerID      = gofakeit.Username()
+		shardKey        = gofakeit.DigitN(1)
+		smID            = gofakeit.IntRange(1, 100)
+		oofShard        = gofakeit.DigitN(1)
+		deliveryService = gofakeit.Company()
+		dateCreated     = gofakeit.Date()
+
+		delivery = &Delivery{
+			Name:    gofakeit.Name(),
+			Phone:   gofakeit.Phone(),
+			Zip:     gofakeit.Zip(),
+			City:    gofakeit.City(),
+			Address: gofakeit.Street(),
+			Region:  gofakeit.State(),
+			Email:   gofakeit.Email(),
+		}
+		deliveryCost = gofakeit.Float64Range(100, 5000)
+		goodsTotal   = gofakeit.IntRange(10, 5000)
+		customFee    = gofakeit.Float64Range(0, 1000)
+
+		payment = &Payment{
+			Transaction:  gofakeit.LetterN(19),
+			RequestID:    gofakeit.UUID(),
+			Currency:     gofakeit.CurrencyShort(),
+			Provider:     gofakeit.Company(),
+			Amount:       deliveryCost + float64(goodsTotal) + customFee,
+			PaymentDt:    time.Now().Unix(),
+			Bank:         gofakeit.BankName(),
+			DeliveryCost: deliveryCost,
+			GoodsTotal:   goodsTotal,
+			CustomFee:    customFee,
+		}
+
+		item = Item{
+			ChrtID:      int64(gofakeit.IntRange(1000000, 9999999)),
+			TrackNumber: trackNumber,
+			Price:       gofakeit.Price(100, 10000),
+			Rid:         gofakeit.UUID(),
+			Name:        gofakeit.ProductName(),
+			Sale:        gofakeit.IntRange(0, 100),
+			Size:        gofakeit.DigitN(1),
+			TotalPrice:  gofakeit.Float64Range(100, 10000),
+			NmID:        int64(gofakeit.IntRange(1000000, 9999999)),
+			Brand:       gofakeit.Company(),
+			Status:      gofakeit.IntRange(200, 300),
+		}
+	)
+
+	res := Order{
+		OrderUID:          orderUID,
+		TrackNumber:       trackNumber,
+		Entry:             entry,
+		Delivery:          *delivery,
+		Payment:           *payment,
+		Items:             []Item{item},
+		Locale:            locale,
+		InternalSignature: "",
+		CustomerID:        customerID,
+		DeliveryService:   deliveryService,
+		ShardKey:          shardKey,
+		SmID:              smID,
+		DateCreated:       dateCreated,
+		OofShard:          oofShard,
+	}
+
+	return res
+}
+
+func generateInvalidOrder() Order {
 	orderUID := fmt.Sprintf("order_%d_%d", time.Now().Unix(), rand.Intn(10000))
 	trackNumber := fmt.Sprintf("TRACK%d", rand.Intn(1000000))
 
@@ -166,8 +239,16 @@ func main() {
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 
+	cnt := 1
+
 	for range ticker.C {
-		order := generateRandomOrder()
+		var order Order
+		if cnt%5 == 0 {
+			order = generateInvalidOrder()
+			cnt = 1
+		} else {
+			order = generateValidOrder()
+		}
 		data, err := json.Marshal(order)
 		if err != nil {
 			log.Fatalf("failed to marshal order: %v", err)
@@ -181,6 +262,7 @@ func main() {
 			log.Printf("failed to send message in Kafka: %v\n", err.Error())
 			return
 		}
+		cnt++
 
 		log.Printf("message sent to partition %d at offset %d\n", partition, offset)
 	}

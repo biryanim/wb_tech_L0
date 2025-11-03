@@ -3,6 +3,9 @@ package tests
 import (
 	"context"
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/biryanim/wb_tech_L0/internal/client/cache"
 	cacheMock "github.com/biryanim/wb_tech_L0/internal/client/cache/mocks"
 	"github.com/biryanim/wb_tech_L0/internal/client/db"
@@ -14,8 +17,6 @@ import (
 	"github.com/biryanim/wb_tech_L0/internal/service/consumer/ordersaver"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func Test_RunConsumer(t *testing.T) {

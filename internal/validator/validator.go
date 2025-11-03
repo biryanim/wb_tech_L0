@@ -97,23 +97,12 @@ func validateEntry(entry string, result *ValidationResult) {
 }
 
 func validateLocale(locale string, result *ValidationResult) {
-	validLocales := map[string]bool{
-		"en": true, "ru": true, "fr": true, "de": true, "es": true,
-	}
-
 	if len(strings.TrimSpace(locale)) == 0 {
 		result.Errors = append(result.Errors, ValidationError{
 			Field:   "locale",
 			Message: "locale is required",
 		})
 		return
-	}
-
-	if !validLocales[strings.ToLower(locale)] {
-		result.Errors = append(result.Errors, ValidationError{
-			Field:   "locale",
-			Message: fmt.Sprintf("locale '%s' is not supported", locale),
-		})
 	}
 }
 
@@ -253,7 +242,7 @@ func validatePhone(phone string) error {
 		return fmt.Errorf("phone is required")
 	}
 
-	if !regexp.MustCompile(`^\+\d{7,15}$`).MatchString(phone) {
+	if !regexp.MustCompile(`^\d{7,15}$`).MatchString(phone) {
 		return fmt.Errorf("phone '%s' is invalid (must be +XXXXXXX format with 7-15 digits)", phone)
 	}
 
@@ -301,16 +290,10 @@ func validatePayment(payment *model.Payment, result *ValidationResult) {
 		})
 	}
 
-	validProviders := map[string]bool{"wbpay": true, "yandex": true, "sber": true}
 	if strings.TrimSpace(payment.Provider) == "" {
 		result.Errors = append(result.Errors, ValidationError{
 			Field:   "payment.provider",
 			Message: "payment provider is required",
-		})
-	} else if !validProviders[strings.ToLower(payment.Provider)] {
-		result.Errors = append(result.Errors, ValidationError{
-			Field:   "payment.provider",
-			Message: fmt.Sprintf("payment provider '%s' is not recognized", payment.Provider),
 		})
 	}
 
