@@ -11,6 +11,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// InitTracer initializes OpenTelemetry tracing with Jaeger as the exporter.
 func InitTracer(jaegerURL string, serviceName string) (trace.Tracer, error) {
 	exporter, err := NewJaegerExporter(jaegerURL)
 	if err != nil {
@@ -32,6 +33,7 @@ func NewJaegerExporter(url string) (tracesdk.SpanExporter, error) {
 	return jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(url)))
 }
 
+// NewTraceProvider creates a new TracerProvider with the given span exporter and service name.
 func NewTraceProvider(exp tracesdk.SpanExporter, serviceName string) (*tracesdk.TracerProvider, error) {
 	r, err := resource.Merge(
 		resource.Default(),

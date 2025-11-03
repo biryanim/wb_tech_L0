@@ -15,11 +15,13 @@ type Consumer interface {
 	Close() error
 }
 
+// Producer defines the interface for sending messages to a Dead Letter Queue.
 type Producer interface {
 	SendToDLQ(ctx context.Context, message *DLQMessage, topic string) error
 	Close() error
 }
 
+// DLQMessage represents a message that failed processing and is being sent to the Dead Letter Queue.
 type DLQMessage struct {
 	OriginalMessage []byte
 	Topic           string

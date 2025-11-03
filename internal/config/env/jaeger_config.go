@@ -17,6 +17,7 @@ type jaegerConfig struct {
 	service string
 }
 
+// NewJaegerConfig creates a new JaegerConfig instance by reading JAEGER_URL and JAEGER_SERVICE environment variables.
 func NewJaegerConfig() (config.JaegerConfig, error) {
 	url := os.Getenv(jaegerURLEnvName)
 	if len(url) == 0 {
@@ -34,10 +35,12 @@ func NewJaegerConfig() (config.JaegerConfig, error) {
 	}, nil
 }
 
+// URL returns the Jaeger collector endpoint URL.
 func (j *jaegerConfig) URL() string {
 	return j.url
 }
 
+// ServiceName returns the service name for Jaeger tracing.
 func (j *jaegerConfig) ServiceName() string {
 	return j.service
 }

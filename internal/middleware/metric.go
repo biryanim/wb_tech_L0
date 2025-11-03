@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// MetricMiddleware returns a Gin middleware that collects HTTP metrics including request counts, response counts, and response times.
 func MetricMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		metric.IncRequestCounter()

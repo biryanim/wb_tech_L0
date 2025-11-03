@@ -22,6 +22,7 @@ type KafkaConsumerConfig interface {
 	Config() *sarama.Config
 }
 
+// JaegerConfig defines methods for retrieving Jaeger tracing configuration.
 type JaegerConfig interface {
 	URL() string
 	ServiceName() string

@@ -7,10 +7,16 @@
 Разработан демонстрационный сервис, отображающий данные о заказах. 
 Сервис получает данные заказов из очереди сообщений Kafka, 
 сохраняет их в базу данных PostgreSQL и кеширует в памяти для быстрого доступа.
-Есть метрики и трэйсинг
+Есть метрики(prometheus), трейсинг(jaeger + opentelemetry), также реализована DLQ. 
 
 ## Структура проекта
 ```
+.
+├── alerts.yaml
+├── bin
+│   ├── golint
+│   ├── goose
+│   └── main
 ├── cmd
 │   ├── producer
 │   │   └── main.go
@@ -25,11 +31,18 @@
 │   ├── client
 │   │   ├── cache
 │   │   │   ├── client.go
-│   │   │   └── lrucache
-│   │   │       ├── cache.go
-│   │   │       └── cache_test.go
+│   │   │   ├── generate.go
+│   │   │   ├── lrucache
+│   │   │   │   ├── cache.go
+│   │   │   │   └── cache_test.go
+│   │   │   └── mocks
+│   │   │       └── client_minimock.go
 │   │   ├── db
 │   │   │   ├── db.go
+│   │   │   ├── generate.go
+│   │   │   ├── mocks
+│   │   │   │   ├── client_minimock.go
+│   │   │   │   └── tx_manager_minimock.go
 │   │   │   ├── pg
 │   │   │   │   ├── client.go
 │   │   │   │   └── pg.go
@@ -39,34 +52,60 @@
 │   │       ├── consumer
 │   │       │   ├── consumer.go
 │   │       │   └── message_handler.go
-│   │       └── kafka.go
+│   │       ├── generate.go
+│   │       ├── kafka.go
+│   │       ├── mocks
+│   │       │   ├── consumer_minimock.go
+│   │       │   └── producer_minimock.go
+│   │       └── producer
+│   │           └── producer.go
 │   ├── config
 │   │   ├── config.go
 │   │   └── env
 │   │       ├── http_config.go
+│   │       ├── jaeger_config.go
 │   │       ├── kafka_consumer.go
 │   │       └── pg.go
+│   ├── metric
+│   │   └── metric.go
+│   ├── middleware
+│   │   └── metric.go
 │   ├── model
 │   │   └── model.go
 │   ├── repository
+│   │   ├── generate.go
+│   │   ├── mocks
+│   │   │   └── order_repository_minimock.go
 │   │   ├── order
 │   │   │   └── repository.go
 │   │   └── repository.go
-│   └── service
-│       ├── consumer
-│       │   └── ordersaver
-│       │       ├── consumer.go
-│       │       └── handler.go
-│       ├── order
-│       │   └── service.go
-│       └── service.go
+│   ├── service
+│   │   ├── consumer
+│   │   │   └── ordersaver
+│   │   │       ├── consumer.go
+│   │   │       ├── handler.go
+│   │   │       └── tests
+│   │   │           ├── order_save_handler_test.go
+│   │   │           └── run_consumer_test.go
+│   │   ├── order
+│   │   │   ├── service.go
+│   │   │   └── tests
+│   │   │       ├── get_order_test.go
+│   │   │       └── resotre_cache_test.go
+│   │   └── service.go
+│   ├── tracing
+│   │   └── trace.go
+│   └── validator
+│       └── validator.go
 ├── local.env
 ├── Makefile
 ├── migrations
 │   └── 20250820193524_orders_tables.sql
+├── prometheus.yaml
 ├── README.md
 └── templates
     └── index.html
+
 ```
 
 ## Технологический стек

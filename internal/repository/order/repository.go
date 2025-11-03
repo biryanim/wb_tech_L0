@@ -14,9 +14,12 @@ import (
 )
 
 var (
-	ErrOrderNotFound    = errors.New("order not found")
+	// ErrOrderNotFound is returned when a requested order cannot be found in the database.
+	ErrOrderNotFound = errors.New("order not found")
+	// ErrDeliveryNotFound is returned when a requested delivery cannot be found in the database.
 	ErrDeliveryNotFound = errors.New("delivery not found")
-	ErrPaymentNotFound  = errors.New("payment not found")
+	// ErrPaymentNotFound is returned when a requested payment cannot be found in the database.
+	ErrPaymentNotFound = errors.New("payment not found")
 )
 
 var _ def.OrderRepository = (*repo)(nil)

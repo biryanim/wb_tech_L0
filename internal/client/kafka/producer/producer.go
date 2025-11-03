@@ -21,6 +21,7 @@ type producer struct {
 	tracer       trace.Tracer
 }
 
+// NewProducer creates and returns a new Kafka producer with the provided sync producer and tracer.
 func NewProducer(syncProducer sarama.SyncProducer, trace trace.Tracer) *producer {
 	return &producer{
 		syncProducer: syncProducer,
@@ -28,6 +29,7 @@ func NewProducer(syncProducer sarama.SyncProducer, trace trace.Tracer) *producer
 	}
 }
 
+// SendToDLQ sends a failed message to the Dead Letter Queue topic with distributed tracing.
 func (p *producer) SendToDLQ(ctx context.Context, message *kafka.DLQMessage, topic string) error {
 	ctx, span := p.tracer.Start(ctx, "send_to_dlq")
 	defer span.End()
@@ -73,6 +75,7 @@ func (p *producer) SendToDLQ(ctx context.Context, message *kafka.DLQMessage, top
 	return nil
 }
 
+// Close closes the underlying Kafka sync producer connection.
 func (p *producer) Close() error {
 	return p.syncProducer.Close()
 }

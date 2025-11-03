@@ -13,6 +13,7 @@ import (
 	"github.com/IBM/sarama"
 )
 
+// Order represents a complete order with delivery, payment, and item information.
 type Order struct {
 	OrderUID          string    `json:"order_uid"`
 	TrackNumber       string    `json:"track_number"`
@@ -30,6 +31,7 @@ type Order struct {
 	OofShard          string    `json:"oof_shard"`
 }
 
+// Delivery represents delivery address and recipient information.
 type Delivery struct {
 	Name    string `json:"name"`
 	Phone   string `json:"phone"`
@@ -40,6 +42,7 @@ type Delivery struct {
 	Email   string `json:"email"`
 }
 
+// Payment represents payment information and transaction details.
 type Payment struct {
 	Transaction  string  `json:"transaction"`
 	RequestID    string  `json:"request"`
@@ -53,6 +56,7 @@ type Payment struct {
 	CustomFee    float64 `json:"custom_fee"`
 }
 
+// Item represents a single item in an order.
 type Item struct {
 	ChrtID      int64   `json:"chrt_id"`
 	TrackNumber string  `json:"track_number"`
