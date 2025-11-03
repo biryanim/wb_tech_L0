@@ -145,7 +145,7 @@ func validateShardKey(shardKey string, result *ValidationResult) {
 		return
 	}
 
-	if !regexp.MustCompile(`^d+$`).MatchString(shardKey) {
+	if !regexp.MustCompile(`^\d+$`).MatchString(shardKey) {
 		result.Errors = append(result.Errors, ValidationError{
 			Field:   "shard_key",
 			Message: "shard_key must match ^d+$",
